@@ -67,7 +67,7 @@ with open("q_table.pkl", "rb") as f:
     agent.q_table = pickle.load(f)
 
 # Run evaluation
-#evaluate_agent(agent, games=5, delay=0.8)
+evaluate_agent(agent, games=10, delay=0.8)
 
 def print_q_table(agent):
     print("Q-table contents:")
@@ -75,4 +75,4 @@ def print_q_table(agent):
         print(f"State-Action: {state_action} Q-value: {q_value}")
 
 
-print_q_table(agent)
+#print_q_table(agent)

@@ -44,7 +44,7 @@ class Hangman:
 
 class Agent:
     def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.5):
-        self.word_length = 3
+        self.word_length = 2
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.exploration_rate = exploration_rate
@@ -98,7 +98,7 @@ import pickle
 
 def train_agent(agent, episodes=1000, save_path="q_table.pkl", verbose=True):
     for episode in range(episodes):
-        hangman = Hangman(letters=3)
+        hangman = Hangman(letters=2)
 
         while True:
             # Get and normalize current state
