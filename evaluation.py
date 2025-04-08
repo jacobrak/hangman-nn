@@ -8,6 +8,15 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
     wins = 0
     total_lives_left = 0
 
+    # Disable exploration for evaluation
+    original_exploration = agent.exploration_rate
+    agent.exploration_rate = 0
+
+    # Verify Q-table is loaded
+    if not agent.q_table:
+        print("⚠️ WARNING: Q-table is empty!")
+        return
+
     for game in range(games):
         hangman = Hangman(letters=3)
         guesses_this_game = []
@@ -18,43 +27,25 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
         while True:
             state = hangman.get_state()
             normalized_state = agent.normalize_state(state)
-            print(normalized_state)
-
-            # Choose best known action
-            available_actions = [a for a in agent.alphabet if a not in hangman.guessed_letters] 
-            best_action = None
-            best_q = float('-inf')
             
+            # Use agent's decision logic
+            action = agent.choose_action(normalized_state, hangman.guessed_letters)
             
+            if action is None:
+                break  # No valid actions left
 
-            for action in available_actions:
-                
-                normalized_state = agent.normalize_state(state)
-
-                # Create the state-action tuple
-                action_tuple = (normalized_state, action)
-                
-                # Look up the Q-value for the state-action pair in the Q-table
-                q = agent.q_table.get(action_tuple, float('-inf'))
-                if q > 0:
-                    print(q)
-                if q > best_q:
-                    best_q = q
-                    best_action = action
-                    print(f"best action:{best_action}")
-            action = best_action if best_action else random.choice(available_actions)
             guesses_this_game.append(action)
-
             feedback = hangman.guess(action)
+            
             print(f"Guess: {action} ➤ {feedback}")
             print("Current word:", " ".join(hangman.guessed_word))
             time.sleep(delay)
 
-            if hangman.is_game_over():
-                result = hangman.is_game_over()
-                print(result)
-
-                if "Congratulations" in result:
+            game_status = hangman.is_game_over()
+            if game_status:
+                print(game_status)
+                print(hangman.word)
+                if "Congratulations" in game_status:
                     wins += 1
                     total_lives_left += hangman.lives
                 break
@@ -62,6 +53,9 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
         if verbose:
             print("Guessed letters:", guesses_this_game)
             print("-" * 40)
+
+    # Restore original exploration rate
+    agent.exploration_rate = original_exploration
 
     # Summary
     win_rate = wins / games
@@ -79,7 +73,7 @@ with open("q_table.pkl", "rb") as f:
     agent.q_table = pickle.load(f)
 
 # Run evaluation
-#evaluate_agent(agent, games=10, delay=0.8)
+evaluate_agent(agent, games=10, delay=0.8)
 
 
 #print(f"Loaded Q-table: {agent.q_table}")
@@ -94,5 +88,5 @@ def print_q_table(agent):
         print(f"State-Action: {state_action} Q-value: {q_value}")
 
 
-print_q_table(agent)
+#print_q_table(agent)
 

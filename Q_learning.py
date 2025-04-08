@@ -1,157 +1,123 @@
 from hangman import *
 import random
+import pickle
 
 class Hangman:
     def __init__(self, letters):
-        self.word = get_random_word(letters) 
+        self.word = get_random_word(letters)
         self.guessed_word = ["_"] * len(self.word)
         self.lives = 6
         self.guessed_letters = []
+
     def __str__(self):
         return " ".join(self.guessed_word)
 
     def guess(self, letter):
         if len(letter) != 1 or not letter.isalpha():
-            return "Please enter a valid single letter."
+            return "Invalid input"
 
         letter = letter.lower()
-
         if letter in self.guessed_letters:
-            return "You already guessed this letter"
-        
-        self.guessed_letters.append(letter)
+            return "Already guessed"
 
+        self.guessed_letters.append(letter)
         if letter in self.word:
-            for i in range(len(self.word)):
-                if self.word[i] == letter:
+            for i, char in enumerate(self.word):
+                if char == letter:
                     self.guessed_word[i] = letter
-            return "Correct!"
+            return "Correct"
         else:
             self.lives -= 1
-            return f"Incorrect! Attempts left: {self.lives}"
-        
+            return "Incorrect"
+
     def is_game_over(self):
-        # Check if the game is over (either word is guessed or attempts run out)
         if "_" not in self.guessed_word:
-            return "Congratulations! You've guessed the word: " + self.word
+            return "win"
         elif self.lives <= 0:
-            return f"Game over! The word was: {self.word}"
-        else:
-            return None
-        
+            return "lose"
+        return None
+
     def get_state(self):
-        return (self.guessed_word, self.guessed_letters)
+        return (self.guessed_word.copy(), self.guessed_letters.copy())
 
 class Agent:
     def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.2):
-        self.word_length = 3
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.exploration_rate = exploration_rate
         self.alphabet = 'abcdefghijklmnopqrstuvwxyz'
         self.q_table = {}
 
-    def get_state(self):
-        return Hangman.get_state()
-     
     def normalize_state(self, state):
         guessed_word, guessed_letters = state
         return (tuple(guessed_word), tuple(sorted(guessed_letters)))
 
     def update_q_table(self, state, action, reward, next_state, guessed_letters):
-        # Normalize states
         state = self.normalize_state(state)
-        next_state = self.normalize_state(next_state)
+        next_state_norm = self.normalize_state(next_state) if next_state else None
 
-        # Get old Q-value
         old_q = self.q_table.get((state, action), 0.0)
+        
+        # Calculate max future Q for non-terminal states
+        if next_state_norm:
+            available_actions = [a for a in self.alphabet if a not in guessed_letters]
+            future_qs = [self.q_table.get((next_state_norm, a), 0.0) for a in available_actions]
+            max_future_q = max(future_qs) if future_qs else 0.0
+        else:
+            max_future_q = 0.0  # Terminal state
 
-        # Get max future Q-value from next state
-        available_actions = [a for a in self.alphabet if a not in guessed_letters]
-        future_qs = [self.q_table.get((next_state, a), 0.0) for a in available_actions]
-        max_future_q = max(future_qs) if future_qs else 0.0
-
-        # Q-learning update
         new_q = old_q + self.learning_rate * (reward + self.discount_factor * max_future_q - old_q)
-
-        # Store updated value
         self.q_table[(state, action)] = new_q
 
     def choose_action(self, state, guessed_letters):
         available_actions = [a for a in self.alphabet if a not in guessed_letters]
+        if random.random() < self.exploration_rate or not available_actions:
+            return random.choice(available_actions) if available_actions else None
 
-        if random.uniform(0, 1) < self.exploration_rate:
-            return random.choice(available_actions)
+        # Exploit best known action
+        state_norm = self.normalize_state(state)
+        q_values = [(a, self.q_table.get((state_norm, a), 0.0)) for a in available_actions]
+        return max(q_values, key=lambda x: x[1])[0]
 
-        max_q = float('-inf')
-        best_action = None
-        for action in available_actions:
-            q = self.q_table.get((state, action), 0.0)
-            if q > max_q:
-                max_q = q
-                best_action = action
-
-        return best_action if best_action else random.choice(available_actions)
-    
-
-import pickle
-
-def train_agent(agent, episodes=1000, save_path="q_table.pkl", verbose=True):
+def train_agent(agent, episodes=1000, save_path="q_table.pkl"):
     for episode in range(episodes):
         hangman = Hangman(letters=3)
-
         while True:
-            # Get and normalize current state
             state = hangman.get_state()
-            normalized_state = agent.normalize_state(state)
+            action = agent.choose_action(state, hangman.guessed_letters)
+            if action is None:
+                break
 
-            # Choose action
-            action = agent.choose_action(normalized_state, hangman.guessed_letters)
-
-            # Perform action in game
             feedback = hangman.guess(action)
+            game_status = hangman.is_game_over()
 
             # Determine reward
-            if "Correct" in feedback:
-                reward = 10
-            elif "Incorrect" in feedback:
-                reward = -1
+            if game_status == "win":
+                reward = 500
+                next_state = None  # Terminal state
+            elif game_status == "lose":
+                correct = sum(c != '_' for c in hangman.guessed_word)
+                reward = (correct ** 2) * 50 if correct > 0 else -100
+                next_state = None
             else:
-                reward = -10
-
-            # Get next state
-            next_state = hangman.get_state()
+                if "Correct" in feedback:
+                    reward = 10
+                else:
+                    reward = -1
+                next_state = hangman.get_state()
 
             # Update Q-table
             agent.update_q_table(state, action, reward, next_state, hangman.guessed_letters)
 
-            # Check if game ended
-            game_status = hangman.is_game_over()
             if game_status:
-                
-                current_state, _ = next_state
-                correct_guess = sum(1 for c in current_state if c != '_')
-
-                if "Congratulations" in game_status:
-                    final_reward = 500  # Reward for winning the game
-                elif correct_guess != 0:
-                    final_reward =  (correct_guess**2)*50 # scales 
-                else:
-                    final_reward = -100  # Penalty for losing the game with no correct guesses
-
-                agent.update_q_table(state, action, final_reward, next_state, hangman.guessed_letters)
                 break
 
-        # Log progress
-        if verbose and (episode + 1) % 100 == 0:
-            print(f"Episode {episode + 1} complete")
+        if (episode + 1) % 100 == 0:
+            print(f"Episode {episode + 1}, Q-table size: {len(agent.q_table)}")
 
-    # Save Q-table
     with open(save_path, "wb") as f:
         pickle.dump(agent.q_table, f)
-
-    if verbose:
-        print(f"Training complete. Q-table saved to '{save_path}'")
+    print(f"Training complete. Q-table saved to {save_path}")
 
 if __name__ == "__main__":
     train_agent(Agent())
