@@ -9,7 +9,7 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
     total_lives_left = 0
 
     for game in range(games):
-        hangman = Hangman(letters=2)
+        hangman = Hangman(letters=3)
         guesses_this_game = []
 
         print(f"\n🔠 Game {game + 1}")
@@ -18,18 +18,30 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
         while True:
             state = hangman.get_state()
             normalized_state = agent.normalize_state(state)
+            print(normalized_state)
 
             # Choose best known action
-            available_actions = [a for a in agent.alphabet if a not in hangman.guessed_letters]
+            available_actions = [a for a in agent.alphabet if a not in hangman.guessed_letters] 
             best_action = None
             best_q = float('-inf')
+            
+            
 
             for action in available_actions:
-                q = agent.q_table.get((normalized_state, action), 0.0)
+                
+                normalized_state = agent.normalize_state(state)
+
+                # Create the state-action tuple
+                action_tuple = (normalized_state, action)
+                
+                # Look up the Q-value for the state-action pair in the Q-table
+                q = agent.q_table.get(action_tuple, float('-inf'))
+                if q > 0:
+                    print(q)
                 if q > best_q:
                     best_q = q
                     best_action = action
-
+                    print(f"best action:{best_action}")
             action = best_action if best_action else random.choice(available_actions)
             guesses_this_game.append(action)
 
@@ -69,10 +81,18 @@ with open("q_table.pkl", "rb") as f:
 # Run evaluation
 #evaluate_agent(agent, games=10, delay=0.8)
 
+
+#print(f"Loaded Q-table: {agent.q_table}")
+
+
 def print_q_table(agent):
     print("Q-table contents:")
-    for state_action, q_value in agent.q_table.items():
+
+    sorted_q_table = sorted(agent.q_table.items(), key=lambda x: x[1], reverse=False)
+
+    for state_action, q_value in sorted_q_table:
         print(f"State-Action: {state_action} Q-value: {q_value}")
 
 
 print_q_table(agent)
+
