@@ -9,7 +9,7 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
     total_lives_left = 0
 
     for game in range(games):
-        hangman = Hangman()
+        hangman = Hangman(letters=3)
         guesses_this_game = []
 
         print(f"\n🔠 Game {game + 1}")
@@ -67,4 +67,12 @@ with open("q_table.pkl", "rb") as f:
     agent.q_table = pickle.load(f)
 
 # Run evaluation
-evaluate_agent(agent, games=5, delay=0.8)
+#evaluate_agent(agent, games=5, delay=0.8)
+
+def print_q_table(agent):
+    print("Q-table contents:")
+    for state_action, q_value in agent.q_table.items():
+        print(f"State-Action: {state_action} Q-value: {q_value}")
+
+
+print_q_table(agent)

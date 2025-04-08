@@ -40,8 +40,8 @@ class Hangman:
             return None
 
 
-def get_random_word():
-    url = "https://random-word-api.herokuapp.com/word?length=5"
+def get_random_word(letters=5):
+    url = f"https://random-word-api.herokuapp.com/word?length={letters}"
 
     response = requests.get(url)
     if response.status_code == 200:
