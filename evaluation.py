@@ -9,7 +9,7 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
     total_lives_left = 0
 
     for game in range(games):
-        hangman = Hangman(letters=3)
+        hangman = Hangman(letters=2)
         guesses_this_game = []
 
         print(f"\n🔠 Game {game + 1}")
