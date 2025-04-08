@@ -1,4 +1,4 @@
-import requests
+from hangman import *
 
 class Hangman:
     def __init__(self):
@@ -26,7 +26,6 @@ class Hangman:
                     self.guessed_word[i] = letter
             return "Correct!"
         else:
-
             self.lives -= 1
             return f"Incorrect! Attempts left: {self.lives}"
         
@@ -38,29 +37,23 @@ class Hangman:
             return f"Game over! The word was: {self.word}"
         else:
             return None
-
-
-def get_random_word():
-    url = "https://random-word-api.herokuapp.com/word?length=5"
-
-    response = requests.get(url)
-    if response.status_code == 200:
-        word = response.json()[0] 
-    return word
-
-if __name__ == "__main__":
-    hangman_game = Hangman() 
-    print("Welcome to Hangman!")
-    
-    while True:
-        print(f"Word: {hangman_game}")
-        guess = input("Guess a letter: ")
-        result = hangman_game.guess(guess)
-        print()
-        print(result)
         
-        # Check if the game is over
-        game_status = hangman_game.is_game_over()
-        if game_status:
-            print(game_status)
-            break
+    def get_state(self):
+        return (self.guessed_word, self.guessed_letters)
+
+class Agent:
+    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.1):
+        self.word_length = 5
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.exploration_rate = exploration_rate
+        self.alphabet = 'abcdefghijklmnopqrstuvwxyz'
+        self.q_table = {}
+
+    def state(self):
+        return Hangman.get_state() 
+
+    def update_q_table(self):
+        pass
+
+
