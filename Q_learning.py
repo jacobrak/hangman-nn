@@ -43,7 +43,7 @@ class Hangman:
         return (self.guessed_word, self.guessed_letters)
 
 class Agent:
-    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.1):
+    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.5):
         self.word_length = 3
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
