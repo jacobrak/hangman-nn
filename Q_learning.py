@@ -113,7 +113,7 @@ def train_agent(agent, episodes=1000, save_path="q_table.pkl", verbose=True):
 
             # Determine reward
             if "Correct" in feedback:
-                reward = 1
+                reward = 10
             elif "Incorrect" in feedback:
                 reward = -1
             else:
