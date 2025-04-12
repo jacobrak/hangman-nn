@@ -6,7 +6,7 @@ class Hangman:
     def __init__(self, letters):
         self.word = get_random_word(letters)
         self.guessed_word = ["_"] * len(self.word)
-        self.lives = 6
+        self.lives = 5
         self.guessed_letters = []
 
     def __str__(self):
@@ -81,7 +81,7 @@ class Agent:
 
 def train_agent(agent, episodes=1000, save_path="q_table.pkl"):
     for episode in range(episodes):
-        hangman = Hangman(letters=3)
+        hangman = Hangman(letters=5)
         while True:
             state = hangman.get_state()
             action = agent.choose_action(state, hangman.guessed_letters)
