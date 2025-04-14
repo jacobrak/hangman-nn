@@ -79,7 +79,7 @@ class Agent:
         q_values = [(a, self.q_table.get((state_norm, a), 0.0)) for a in available_actions]
         return max(q_values, key=lambda x: x[1])[0]
 
-def train_agent(agent, episodes=1000, save_path="q_table.pkl"):
+def train_agent(agent, episodes=10000, save_path="q_table.pkl"):
     for episode in range(episodes):
         hangman = Hangman(letters=5)
         while True:
