@@ -123,7 +123,7 @@ if __name__ == "__main__":
     
     agent = Agent()
 
-    with open("q_table_main.pkl", "rb") as f:
+    with open("q_table.pkl", "rb") as f:
         agent.q_table = pickle.load(f)
     
-    train_agent(Agent(), episodes=100)
+    train_agent(agent, episodes=1000)
