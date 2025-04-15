@@ -120,4 +120,10 @@ def train_agent(agent, episodes=10000, save_path="q_table.pkl"):
     print(f"Training complete. Q-table saved to {save_path}")
 
 if __name__ == "__main__":
-    train_agent(Agent())
+    
+    agent = Agent()
+
+    with open("q_table_main.pkl", "rb") as f:
+        agent.q_table = pickle.load(f)
+    
+    train_agent(Agent(), episodes=100)

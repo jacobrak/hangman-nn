@@ -4,7 +4,7 @@ class Hangman:
     def __init__(self):
         self.word = get_random_word() 
         self.guessed_word = ["_"] * len(self.word)
-        self.lives = 6
+        self.lives = 5
         self.guessed_letters = []
     def __str__(self):
         return " ".join(self.guessed_word)
