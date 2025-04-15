@@ -126,4 +126,4 @@ if __name__ == "__main__":
     with open("q_table.pkl", "rb") as f:
         agent.q_table = pickle.load(f)
     
-    train_agent(agent, episodes=1000)
+    train_agent(agent, episodes=25000)
