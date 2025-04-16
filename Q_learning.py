@@ -3,7 +3,7 @@ import random
 import pickle
 
 
-def cache(total_words=50000):
+def cache(total_words=500_000):
     url  = f"https://random-word-api.herokuapp.com/word?number={total_words}&length=5"
 
     response = requests.get(url)
@@ -135,10 +135,11 @@ def train_agent(agent, episodes=10000, save_path="q_table.pkl"):
     print(f"Training complete. Q-table saved to {save_path}")
 
 if __name__ == "__main__":
-    
-    agent = Agent()
+    train_mode = False
+    if train_mode == True:
+        agent = Agent()
 
-    with open("q_table.pkl", "rb") as f:
-        agent.q_table = pickle.load(f)
+        with open("q_table.pkl", "rb") as f:
+            agent.q_table = pickle.load(f)
     
-    train_agent(agent, episodes=25000)
+    train_agent(Agent(), episodes=15000)

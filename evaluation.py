@@ -4,7 +4,7 @@ import random
 from Q_learning import *
 import pickle
 
-def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
+def evaluate_agent(agent, games=10, delay=0, verbose=True):
     wins = 0
     total_lives_left = 0
 
@@ -45,7 +45,7 @@ def evaluate_agent(agent, games=10, delay=0.5, verbose=True):
             if game_status:
                 print(game_status)
                 print(hangman.word)
-                if "Congratulations" in game_status:
+                if "win" in game_status:
                     wins += 1
                     total_lives_left += hangman.lives
                 break
