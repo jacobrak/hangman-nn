@@ -2,9 +2,24 @@ from hangman import *
 import random
 import pickle
 
+
+def cache(total_words=50000):
+    url  = f"https://random-word-api.herokuapp.com/word?number={total_words}&length=5"
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        word_list = response.json() 
+    return (word_list)
+
+Word_set = cache()
+
+def pick_random():
+    word = random.choice(Word_set)
+    return word
+
 class Hangman:
     def __init__(self, letters):
-        self.word = get_random_word(letters)
+        self.word = pick_random()
         self.guessed_word = ["_"] * len(self.word)
         self.lives = 5
         self.guessed_letters = []
