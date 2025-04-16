@@ -18,7 +18,7 @@ def pick_random():
     return word
 
 class Hangman:
-    def __init__(self, letters):
+    def __init__(self):
         self.word = pick_random()
         self.guessed_word = ["_"] * len(self.word)
         self.lives = 5
