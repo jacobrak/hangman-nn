@@ -8,7 +8,10 @@ def cache(total_words=500_000):
 
     response = requests.get(url)
     if response.status_code == 200:
-        word_list = response.json() 
+        word_list = response.json()
+    else:
+        print(f"Warning: Word API failed with status {response.status_code}.")
+        return
     return (word_list)
 
 Word_set = cache()
@@ -96,7 +99,7 @@ class Agent:
 
 def train_agent(agent, episodes=10000, save_path="q_table.pkl"):
     for episode in range(episodes):
-        hangman = Hangman(letters=5)
+        hangman = Hangman()
         while True:
             state = hangman.get_state()
             action = agent.choose_action(state, hangman.guessed_letters)
