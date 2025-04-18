@@ -1,1 +1,5 @@
 q_table_huge.pkl
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
