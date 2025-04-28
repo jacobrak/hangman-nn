@@ -5,6 +5,8 @@ import torch.optim as optim
 import numpy as np
 import requests
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # === Word Setup ===
 def cache(total_words=500_000):
     url = f"https://random-word-api.herokuapp.com/word?number={total_words}&length=5"
@@ -63,11 +65,11 @@ class DQN(nn.Module):
     def __init__(self, input_size, output_size):
         super(DQN, self).__init__()
         self.net = nn.Sequential(
-            nn.Linear(input_size, 128),
+            nn.Linear(input_size, 512),
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Linear(512, 128),
             nn.ReLU(),
-            nn.Linear(64, output_size)
+            nn.Linear(128, output_size)
         )
 
     def forward(self, x):
@@ -79,7 +81,7 @@ class DQNAgent:
         self.epsilon = epsilon
         self.alphabet = 'abcdefghijklmnopqrstuvwxyz'
         self.letter_to_index = {c: i for i, c in enumerate(self.alphabet)}
-        self.model = DQN(input_size=157, output_size=26)
+        self.model = DQN(input_size=157, output_size=26).to(device=device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.loss_fn = nn.MSELoss()
 
@@ -95,7 +97,8 @@ class DQNAgent:
         lives_vec = [lives / 5.0]
 
         state = word_vec + guessed_vec + lives_vec
-        return torch.tensor(state, dtype=torch.float32)
+        return torch.tensor(state, dtype=torch.float32, device=device)
+
 
     def choose_action(self, state_tensor, guessed_letters):
         if random.random() < self.epsilon:
@@ -104,7 +107,7 @@ class DQNAgent:
 
         with torch.no_grad():
             q_values = self.model(state_tensor)
-        mask = torch.tensor([0 if c in guessed_letters else 1 for c in self.alphabet], dtype=torch.bool)
+        mask = torch.tensor([0 if c in guessed_letters else 1 for c in self.alphabet], dtype=torch.bool, device=device)
         masked_q = q_values.masked_fill(~mask, float('-inf'))
         best_action_index = torch.argmax(masked_q).item()
         return self.alphabet[best_action_index]
