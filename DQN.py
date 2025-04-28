@@ -67,7 +67,9 @@ class DQN(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(input_size, 512),
             nn.ReLU(),
-            nn.Linear(512, 128),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
             nn.ReLU(),
             nn.Linear(128, output_size)
         )
@@ -173,5 +175,5 @@ def train_dqn_agent(agent, episodes=5000):
 
 if __name__ == "__main__":
     agent = DQNAgent()
-    train_dqn_agent(agent, episodes=100000)
+    train_dqn_agent(agent, episodes=10000)
     torch.save(agent.model.state_dict(), "dqn_hangman.pt")
